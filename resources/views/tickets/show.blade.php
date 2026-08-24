@@ -4,7 +4,9 @@
 
 @section('content')
 @php
-    $isEndUser = auth()->user()->role->role_name === 'End User';
+    $user = auth()->user();
+    $canHandle = $user->canHandleTickets();     // Teknisi, Supervisor, Admin
+    $canAssign = $user->canAssignTickets();     // Supervisor, Admin
 @endphp
 
 <a href="{{ route('tickets.index') }}" class="text-sm text-gray-500 hover:text-brand-700 mb-4 inline-block">&larr; Kembali ke daftar tiket</a>
@@ -66,14 +68,14 @@
                 <textarea name="comment_text" rows="3" required placeholder="Tulis komentar..."
                           class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-700 focus:ring-1 focus:ring-brand-700"></textarea>
                 <div class="flex items-center justify-between mt-3">
-                    @unless ($isEndUser)
+                    @if ($canHandle)
                         <label class="flex items-center gap-2 text-xs text-gray-500">
                             <input type="checkbox" name="is_internal" value="1" class="rounded border-gray-300 text-brand-700 focus:ring-brand-700">
                             Catatan internal (tidak terlihat end-user)
                         </label>
                     @else
                         <span></span>
-                    @endunless
+                    @endif
                     <button type="submit" class="bg-brand-700 hover:bg-brand-800 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors">
                         Kirim
                     </button>
@@ -84,7 +86,7 @@
 
     {{-- Sidebar --}}
     <div class="space-y-6">
-        @unless ($isEndUser)
+        @if ($canHandle)
             <div class="bg-white border border-[#E2E8F0] rounded-lg p-5">
                 <h2 class="text-sm font-semibold text-gray-700 mb-3">Ubah Status</h2>
                 <form method="POST" action="{{ route('tickets.updateStatus', $ticket) }}" class="flex gap-2">
@@ -100,7 +102,31 @@
                     </button>
                 </form>
             </div>
-        @endunless
+        @endif
+
+        @if ($canAssign)
+            <div class="bg-white border border-[#E2E8F0] rounded-lg p-5">
+                <h2 class="text-sm font-semibold text-gray-700 mb-3">Tugaskan ke Teknisi</h2>
+                <form method="POST" action="{{ route('tickets.assign', $ticket) }}" class="flex gap-2">
+                    @csrf
+                    @method('PATCH')
+                    <select name="assigned_to" required class="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-700 focus:ring-1 focus:ring-brand-700">
+                        <option value="">Pilih teknisi</option>
+                        @foreach ($technicians as $tech)
+                            <option value="{{ $tech->user_id }}" @selected($ticket->assigned_to === $tech->user_id)>
+                                {{ $tech->full_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="bg-brand-700 hover:bg-brand-800 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors">
+                        Tugaskan
+                    </button>
+                </form>
+                @if ($technicians->isEmpty())
+                    <p class="text-xs text-amber-600 mt-2">Belum ada akun Teknisi. Tambahkan lewat menu Kelola Pengguna.</p>
+                @endif
+            </div>
+        @endif
 
         <div class="bg-white border border-[#E2E8F0] rounded-lg p-5">
             <h2 class="text-sm font-semibold text-gray-700 mb-3">Detail</h2>

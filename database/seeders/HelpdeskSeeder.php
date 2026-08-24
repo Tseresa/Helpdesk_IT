@@ -40,16 +40,26 @@ class HelpdeskSeeder extends Seeder
             ['priority_name' => 'Critical', 'priority_level' => 4],
         ])->each(fn ($p) => Priority::firstOrCreate(['priority_name' => $p['priority_name']], $p));
 
-        // Contoh akun admin default
-        User::firstOrCreate(
-            ['email' => 'admin@helpdesk.local'],
-            [
-                'role_id'       => $roles['Admin']->role_id,
-                'department_id' => $itDept->department_id,
-                'full_name'     => 'Administrator',
-                'password_hash' => Hash::make('password123'),
-                'is_active'     => true,
-            ]
-        );
+        // Contoh akun untuk tiap peran - memudahkan testing tanpa perlu
+        // buat manual dulu. Password semua akun contoh: password123
+        $sampleAccounts = [
+            ['email' => 'admin@helpdesk.local', 'full_name' => 'Administrator', 'role' => 'Admin'],
+            ['email' => 'teknisi@helpdesk.local', 'full_name' => 'Budi Teknisi', 'role' => 'Teknisi'],
+            ['email' => 'supervisor@helpdesk.local', 'full_name' => 'Sari Supervisor', 'role' => 'Supervisor'],
+            ['email' => 'manajemen@helpdesk.local', 'full_name' => 'Andi Manajemen', 'role' => 'Manajemen'],
+        ];
+
+        foreach ($sampleAccounts as $account) {
+            User::firstOrCreate(
+                ['email' => $account['email']],
+                [
+                    'role_id'       => $roles[$account['role']]->role_id,
+                    'department_id' => $itDept->department_id,
+                    'full_name'     => $account['full_name'],
+                    'password_hash' => Hash::make('password123'),
+                    'is_active'     => true,
+                ]
+            );
+        }
     }
 }

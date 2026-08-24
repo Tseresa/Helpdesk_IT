@@ -6,15 +6,40 @@
 <div class="flex items-center justify-between mb-6">
     <div>
         <h1 class="text-xl font-semibold">Tiket</h1>
-        <p class="text-sm text-gray-500 mt-1">Semua tiket layanan IT yang tercatat.</p>
+        <p class="text-sm text-gray-500 mt-1">
+            @if (auth()->user()->isTeknisi())
+                Tiket yang ditugaskan ke Anda, kecuali dipilih "Semua Tiket".
+            @else
+                Semua tiket layanan IT yang tercatat.
+            @endif
+        </p>
     </div>
-    <a href="{{ route('tickets.create') }}"
-       class="inline-flex items-center gap-1.5 bg-brand-700 hover:bg-brand-800 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors">
-        + Tiket Baru
-    </a>
+    @unless (auth()->user()->isManajemen())
+        <a href="{{ route('tickets.create') }}"
+           class="inline-flex items-center gap-1.5 bg-brand-700 hover:bg-brand-800 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors">
+            + Tiket Baru
+        </a>
+    @endunless
 </div>
 
+@if (auth()->user()->isTeknisi())
+    <div class="flex gap-2 mb-4 text-sm">
+        <a href="{{ request()->fullUrlWithQuery(['filter' => 'mine']) }}"
+           class="px-3 py-1.5 rounded-md border {{ request('filter', 'mine') === 'mine' ? 'bg-brand-700 text-white border-brand-700' : 'border-gray-300 text-gray-600 hover:bg-gray-50' }}">
+            Tiket Saya
+        </a>
+        <a href="{{ request()->fullUrlWithQuery(['filter' => 'all']) }}"
+           class="px-3 py-1.5 rounded-md border {{ request('filter') === 'all' ? 'bg-brand-700 text-white border-brand-700' : 'border-gray-300 text-gray-600 hover:bg-gray-50' }}">
+            Semua Tiket
+        </a>
+    </div>
+@endif
+
 <form method="GET" action="{{ route('tickets.index') }}" class="flex flex-wrap gap-3 mb-5">
+    @if (auth()->user()->isTeknisi())
+        <input type="hidden" name="filter" value="{{ request('filter', 'mine') }}">
+    @endif
+
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari subjek atau ID tiket..."
            class="flex-1 min-w-[200px] rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-700 focus:ring-1 focus:ring-brand-700">
 

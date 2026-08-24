@@ -96,4 +96,59 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class, 'user_id', 'user_id');
     }
+
+    // ------------------------------------------------------------------
+    // Helper cek peran - dipakai di controller & Blade view supaya tidak
+    // menulis ulang string role_name di banyak tempat.
+    // ------------------------------------------------------------------
+
+    public function isEndUser(): bool
+    {
+        return $this->role->role_name === 'End User';
+    }
+
+    public function isTeknisi(): bool
+    {
+        return $this->role->role_name === 'Teknisi';
+    }
+
+    public function isSupervisor(): bool
+    {
+        return $this->role->role_name === 'Supervisor';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role->role_name === 'Admin';
+    }
+
+    public function isManajemen(): bool
+    {
+        return $this->role->role_name === 'Manajemen';
+    }
+
+    /**
+     * Boleh mengubah status & menangani tiket secara teknis (Teknisi, Supervisor, Admin).
+     * Manajemen sengaja TIDAK termasuk karena perannya read-only (laporan saja).
+     */
+    public function canHandleTickets(): bool
+    {
+        return in_array($this->role->role_name, ['Teknisi', 'Supervisor', 'Admin']);
+    }
+
+    /**
+     * Boleh menugaskan/reassign tiket ke teknisi lain (Supervisor, Admin).
+     */
+    public function canAssignTickets(): bool
+    {
+        return in_array($this->role->role_name, ['Supervisor', 'Admin']);
+    }
+
+    /**
+     * Boleh mengelola data master (pengguna, kategori, dll) - Admin saja.
+     */
+    public function canManageSystem(): bool
+    {
+        return $this->role->role_name === 'Admin';
+    }
 }

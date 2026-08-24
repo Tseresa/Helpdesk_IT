@@ -53,13 +53,21 @@
                        class="{{ request()->routeIs('tickets.*') ? 'text-brand-700 font-medium' : 'text-gray-500 hover:text-brand-700' }}">
                         Tiket
                     </a>
+                    @if (auth()->user()->isAdmin())
+                        <a href="{{ route('users.index') }}"
+                           class="{{ request()->routeIs('users.*') ? 'text-brand-700 font-medium' : 'text-gray-500 hover:text-brand-700' }}">
+                            Kelola Pengguna
+                        </a>
+                    @endif
                 </nav>
             </div>
             <div class="flex items-center gap-4">
-                <a href="{{ route('tickets.create') }}"
-                   class="hidden sm:inline-flex items-center gap-1.5 bg-brand-700 hover:bg-brand-800 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors">
-                    + Tiket Baru
-                </a>
+                @unless (auth()->user()->isManajemen())
+                    <a href="{{ route('tickets.create') }}"
+                       class="hidden sm:inline-flex items-center gap-1.5 bg-brand-700 hover:bg-brand-800 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors">
+                        + Tiket Baru
+                    </a>
+                @endunless
                 <div class="text-sm text-gray-500 hidden md:block">
                     {{ auth()->user()->full_name }}
                     <span class="text-gray-300">·</span>
